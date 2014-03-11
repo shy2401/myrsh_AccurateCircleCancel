@@ -59,7 +59,7 @@ static bool circuit(int **remain, int nNodes, int v, int s, vector<int> &Stack,
   else {
     for (int w = getNextNeighbor(remain, nNodes, v, s-1); w != -1;
          w = getNextNeighbor(remain, nNodes, v, w)) {
-      if (find(blockedNodes[w].begin(), blockedNodes[w].end(), v) != 
+      if (find(blockedNodes[w].begin(), blockedNodes[w].end(), v) == 
           blockedNodes[w].end()) {
         blockedNodes[w].push_back(v);
       }

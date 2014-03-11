@@ -114,6 +114,44 @@ static void setPreflowArray(Edge **C, int x, int y, vector<vector<int> > &circui
   }
 }
 
+// static void setPreflowArrayOfPerm(Edge **C, int x, int y, vector<vector<int> > &circuits, vector<int> &locateInCircuits, vector<int> &preflow, vector<int> &elemOfPerm, int **preflowArray, int keyEdgePreflow) 
+// {
+//   int i;
+//   for (vector<int>::iterator it = elemOfPerm.begin(); it != elemOfPerm.end(); ++it) {
+//     if (keyEdgePreflow > preflow[*it]) {
+//       for (i = 0; i < (int)circuits[locateInCircuits[*it]].size()-1; ++i) {
+//         preflowArray[circuits[locateInCircuits[*it]][i]][circuits[locateInCircuits[*it]][i+1]] += preflow[*it];
+//       }
+//     } else {
+//       for (i = 0; i < (int)circuits[locateInCircuits[*it]].size()-1; ++i) {
+//         preflowArray[circuits[locateInCircuits[*it]][i]][circuits[locateInCircuits[*it]][i+1]] += keyEdgePreflow;
+//       }
+//     }
+//     keyEdgePreflow -= preflow[*it];
+//   }
+// }
+
+static void setPreflowArrayOfCombElem(Edge **C, int x, int y, vector<vector<int> > &circuits, vector<int> &locateInCircuits, vector<int> &preflow, vector<int> &elemOfComb, int **preflowArray, int keyEdgePreflow, int dissatisfaction) 
+{
+  int i, index = 0;
+  for (vector<int>::iterator it = elemOfComb.begin(); it != elemOfComb.end(); ++it) {
+    if (index == dissatisfaction) {
+      index++;
+      continue;
+    }
+    for (i = 0; i < (int)circuits[locateInCircuits[*it]].size()-1; ++i) {
+      preflowArray[circuits[locateInCircuits[*it]][i]][circuits[locateInCircuits[*it]][i+1]] += preflow[*it];
+    }
+    keyEdgePreflow -= preflow[*it];
+    index++;
+  }
+
+  for (i = 0; i < (int)circuits[locateInCircuits[elemOfComb[dissatisfaction]]].size()-1; ++i) {
+    preflowArray[circuits[locateInCircuits[elemOfComb[dissatisfaction]]][i]][circuits[locateInCircuits[elemOfComb[dissatisfaction]]][i+1]] += keyEdgePreflow;
+  }
+}
+
+
 static bool satisfyRemainCapacity(int **remain, int **preflowArray, int nNodes)
 {
   int i, j;
@@ -175,6 +213,77 @@ void setPreflowArrayZero(int **preflowArray, int nNodes)
       preflowArray[i][j] = 0;
 }
 
+static bool judgePreflow(vector<int> &preflow, vector<int> &elemOfComb, int keyEdgePreflow)
+{
+  int i;
+  int len = (int)elemOfComb.size();
+  for (i = 0; i < len; ++i) {
+    if (i == len-1 && keyEdgePreflow > 0 && keyEdgePreflow <= preflow[elemOfComb[len-1]]) {
+      return true;
+    }
+    keyEdgePreflow -= preflow[elemOfComb[i]];
+    if (keyEdgePreflow <= 0) {
+      return false;
+    }
+  }
+  return false;
+}
+
+static void doCombination(vector<int> &indexArray, int ArrayLen, int indOfIndexArray, int number, vector<int> &result, vector<vector<int> > &comb, vector<int> &preflow, int keyEdgePreflow)
+{
+  if (number == 0) {
+    if (judgePreflow(preflow, result, keyEdgePreflow))
+      comb.push_back(result);
+    return;
+  }
+  if (indOfIndexArray == ArrayLen) {
+    return;
+  }
+  result.push_back(indexArray[indOfIndexArray]);
+  doCombination(indexArray, ArrayLen, indOfIndexArray+1, number-1, result, comb, preflow, keyEdgePreflow);
+  result.pop_back();
+  doCombination(indexArray, ArrayLen, indOfIndexArray+1, number, result, comb, preflow, keyEdgePreflow);
+}
+
+static void combination(vector<int> &indexArray, int ArrayLen, vector<vector<int> > &comb, vector<int> &preflow, int keyEdgePreflow)
+{
+  vector<int> result;
+  int i;
+  for (i = 1; i <= ArrayLen; ++i) {
+    doCombination(indexArray, ArrayLen, 0, i, result, comb, preflow, keyEdgePreflow);
+  }
+}
+
+
+// static void swap(int &lh, int &rh)
+// {
+//   int tmp;
+//   tmp = lh;
+//   lh = rh;
+//   rh = tmp;
+// }
+
+// static void permutation(vector<int> &elemOfComb, int cur, int last, vector<vector<int> > &perm, Edge **C, int x, int y, int **remain, vector<vector<int> > circuits, vector<int> &locateInCircuits, vector<int> &preflow, int **preflowArray, int keyEdgePreflow, int nNodes)
+// {
+//   int i;
+//   if (cur == last) {
+//     setPreflowArrayOfPerm(C, x, y, circuits, locateInCircuits, preflow, elemOfComb, preflowArray, keyEdgePreflow);
+//     if (satisfyRemainCapacity(remain, preflowArray, nNodes)) {
+//       double WT = computeWeight(C, remain, preflowArray, nNodes);
+//       if (WT < 0) {
+//         perm.push_back(elemOfComb);
+//         // renewRemainAndFlow(F, remain, preflowArray, nNodes);
+//         // return true;
+//       }
+//     }
+//   } else {
+//     for (i = cur; i <= last; ++i) {
+//       swap(elemOfComb[cur], elemOfComb[i]);
+//       permutation(elemOfComb, cur+1, last, perm, C, x, y, remain, circuits, locateInCircuits, preflow, preflowArray, keyEdgePreflow, nNodes);
+//       swap(elemOfComb[cur], elemOfComb[i]);
+//     }
+//   }
+// }
 
 bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
 {
@@ -183,6 +292,9 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
   vector<int> locateInCircuits;
   vector<double> weight;
   vector<int> preflow;
+  vector<vector<int> > comb;
+  vector<vector<int> > perm;
+  vector<int> indexArray;
   int **preflowArray;
   preflowArray = (int **)calloc(nNodes, sizeof(int *));
   for (i = 0; i < nNodes; ++i)
@@ -209,11 +321,12 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
         for (vector<int>::iterator it = locateInCircuits.begin(); it != locateInCircuits.end(); ++it) {
           computeWeightAndPreflow(C, F, remain, i, j, circuits[*it], weight, preflow);
         }
-        sortWTPFLC(weight, preflow, locateInCircuits);
+
 
         if (C[i][j].eContent > 0) {
           int circleCount = 0;
           int preflowCount = 0;
+          sortWTPFLC(weight, preflow, locateInCircuits);
           for (k = 0; k < (int)weight.size(); ++k) {
             if (weight[k] < 0) {
               if ((preflowCount += preflow[k]) < remain[i][j]) {
@@ -250,29 +363,72 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
         }
 
         if (C[j][i].eContent > 0) {
-          int circleCount = 0;
-          int preflowCount = 0;
-          for (k = 0; k < (int)weight.size(); ++k) {
-            if ((preflowCount += preflow[i]) < remain[i][j]) {
-              circleCount++;
-            } else {
-              circleCount++;
-              break;
-            }
-          }
+          // int circleCount = 0;
+          // int preflowCount = 0;
+          // for (k = 0; k < (int)weight.size(); ++k) {
+          //   if ((preflowCount += preflow[i]) < remain[i][j]) {
+          //     circleCount++;
+          //   } else {
+          //     circleCount++;
+          //     break;
+          //   }
+          // }
 
-          setPreflowArray(C, i, j, circuits, locateInCircuits, preflow, circleCount, preflowArray, remain[i][j]);
-          if (satisfyRemainCapacity(remain, preflowArray, nNodes)) {
-            double WT = computeWeight(C, remain, preflowArray, nNodes);
-            if (WT < 0) {
-              renewRemainAndFlow(F, remain, preflowArray, nNodes);
-              return true;
+          // setPreflowArray(C, i, j, circuits, locateInCircuits, preflow, circleCount, preflowArray, remain[i][j]);
+          // if (satisfyRemainCapacity(remain, preflowArray, nNodes)) {
+          //   double WT = computeWeight(C, remain, preflowArray, nNodes);
+          //   if (WT < 0) {
+          //     renewRemainAndFlow(F, remain, preflowArray, nNodes);
+          //     return true;
+          //   }
+          // }
+
+          comb.clear();
+          perm.clear();
+          indexArray.clear();
+
+          //---调试用
+          printf("remain\n\n");
+          printArray(remain, nNodes);
+          printf("flow\n\n");
+          printArray(F, nNodes);
+          //---
+
+
+          for(k = 0; k < (int)locateInCircuits.size(); ++k) {
+            indexArray.push_back(k);
+          }
+          combination(indexArray, locateInCircuits.size(), comb, preflow, remain[i][j]);
+          for (vector<vector<int> >::iterator cvvit = comb.begin(); cvvit != comb.end(); ++cvvit) {
+            for (k = 0; k < (int)(*cvvit).size(); ++k) {
+              setPreflowArrayZero(preflowArray, nNodes);
+              setPreflowArrayOfCombElem(C, i, j, circuits, locateInCircuits, preflow, *cvvit, preflowArray, remain[i][j], k);
+              if (satisfyRemainCapacity(remain, preflowArray, nNodes)) {
+                double WT = computeWeight(C, remain, preflowArray, nNodes);
+                if (WT < 0) {
+                  renewRemainAndFlow(F, remain, preflowArray, nNodes);
+                  return true;
+                }
+              }
             }
+
+  // permutation(*cvvit, 0, (*cvvit).size()-1, perm, C, i, j, remain, circuits, locateInCircuits, preflow, preflowArray, remain[i][j], nNodes);
+            // for (vector<vector<int> >::iterator pvvit = perm.begin(); pvvit != perm.end(); ++pvvit) {
+            //   setPreflowArrayOfPerm(C, i, j, circuits, locateInCircuits, preflow, *pvvit, preflowArray, remain[i][j]);
+            //   if (satisfyRemainCapacity(remain, preflowArray, nNodes)) {
+            //     double WT = computeWeight(C, remain, preflowArray, nNodes);
+            //     if (WT < 0) {
+            //       renewRemainAndFlow(F, remain, preflowArray, nNodes);
+            //       return true;
+            //     }
+            //   }
+            // }
           }
         }
       }
     }
   }
+
 
   return false;
 }
