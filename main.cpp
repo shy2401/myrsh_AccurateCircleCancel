@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
     double probability;
     int nNodes, nEdges;  /* 图中的顶点数，边数 */
     vector<vector<int> > circuits;
-    // bool existNC = false;
     FILE *fp;
     long fpLocate;
 
@@ -56,24 +55,8 @@ int main(int argc, char *argv[])
     pushRelabel(capacities, flow, nNodes, source-1, sink-1);
     updateRemain(capacities, flow, remain, nNodes);
 
-    // do {
-    //   circuits.clear();
-    //   findCircuits(remain, nNodes, circuits);
-    //   existNC = NC_cancel(capacities, flow, remain, nNodes, circuits);
-    // } while (existNC);
-
-    //    NCC(capacities, flow, remain, nNodes, sink-1);
+    NCC(capacities, flow, remain, nNodes, sink-1);
     
-    do {
-      // solveFAC(C, F, remain, nNodes, sink);
-      maxFlow = getMaxFlow(flow, source-1, nNodes);
-      probability = getProbability(capacities, flow, nNodes);
-
-      printf("maxFlow = %d, probability = %f\n", maxFlow, probability);
-
-    }while (negativeCommunityCancel(capacities, flow, remain, nNodes));
-
-
     maxFlow = getMaxFlow(flow, source-1, nNodes);
     probability = getProbability(capacities, flow, nNodes);
 

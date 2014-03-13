@@ -6,6 +6,8 @@
 #include "variable.hpp"
 #include "circle_cancel.hpp"
 
+/* 单环消去算法 */
+
 /* #define BOOL int  */
 /* #define TRUE 1 */
 /* #define FALSE 0 */
@@ -329,10 +331,11 @@ void findAllCircle(Edge **C, int **F, int **remain, int *stack, int *sTop,
     int *circle, cLen;
     int *preflow;
 
-    struct timeval NC_begin;
-    struct timeval NC_end;
-    int NC_count = 0;
-    double time;
+    // 显示每次消去一环所消耗的时间
+    // struct timeval NC_begin;
+    // struct timeval NC_end;
+    // int NC_count = 0;
+    // double time;
 
     circle = (int *)calloc(nNodes+1, sizeof(int));
     /* cLen = 0; */
@@ -341,7 +344,8 @@ void findAllCircle(Edge **C, int **F, int **remain, int *stack, int *sTop,
 
  labRedo:
 
-    gettimeofday(&NC_begin, NULL);
+    // 显示消去一环的时间消耗
+    // gettimeofday(&NC_begin, NULL);
 
     for (;;) {
         while (u != -1) {
@@ -369,10 +373,11 @@ void findAllCircle(Edge **C, int **F, int **remain, int *stack, int *sTop,
                     *sTop = 0;
                     u = circle[0];
                     cLen = 0;
-                    NC_count++;
-                    gettimeofday(&NC_end, NULL);
-                    time = (NC_end.tv_sec-NC_begin.tv_sec)*1000000 + NC_end.tv_usec-NC_begin.tv_usec;
-                    printf("%d\t%15.2f\n", NC_count, time);
+                    // 显示消去一环的时间消耗
+                    // NC_count++;
+                    // gettimeofday(&NC_end, NULL);
+                    // time = (NC_end.tv_sec-NC_begin.tv_sec)*1000000 + NC_end.tv_usec-NC_begin.tv_usec;
+                    // printf("%d\t%15.2f\n", NC_count, time);
                     goto labRedo;
                     /* ret = true; */
                 }
@@ -392,9 +397,11 @@ void findAllCircle(Edge **C, int **F, int **remain, int *stack, int *sTop,
             /* return ret; */
     }
  labelReturn:
-    gettimeofday(&NC_end, NULL);
-    time = (NC_end.tv_sec-NC_begin.tv_sec)*1000000 + NC_end.tv_usec-NC_begin.tv_usec;
-    printf("end\t%15.2f\n", time);
+
+    // 显示消去一环的时间消耗
+    // gettimeofday(&NC_end, NULL);
+    // time = (NC_end.tv_sec-NC_begin.tv_sec)*1000000 + NC_end.tv_usec-NC_begin.tv_usec;
+    // printf("end\t%15.2f\n", time);
 
     free(circle);
     free(preflow);
