@@ -361,8 +361,7 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
 void NCC(Edge **C, int **F, int **remain, int nNodes, int sink)
 {
   do {
-    // solveFAC(C, F, remain, nNodes, sink);
-    ;
+    solveFAC(C, F, remain, nNodes, sink);
   }while (negativeCommunityCancel(C, F, remain, nNodes));
 
 }
