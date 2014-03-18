@@ -292,7 +292,7 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
   vector<int> preflow;
   vector<vector<int> > comb;
   vector<vector<int> > perm;
-  vector<int> indexArray;
+  // vector<int> indexArray;
   int **preflowArray;
   preflowArray = (int **)calloc(nNodes, sizeof(int *));
   for (i = 0; i < nNodes; ++i)
@@ -366,7 +366,7 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
           if (C[j][i].eContent > 0) {
             comb.clear();
             perm.clear();
-            indexArray.clear();
+            // indexArray.clear();
 
             //---调试用
             // printf("remain\n\n");
@@ -376,9 +376,9 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
             //---
 
 
-            for(k = 0; k < (int)locateInCircuits.size(); ++k) {
-              indexArray.push_back(k);
-            }
+            // for(k = 0; k < (int)locateInCircuits.size(); ++k) {
+            //   indexArray.push_back(k);
+            // }
             // combination(indexArray, locateInCircuits.size(), comb, preflow, remain[i][j]);
             prunnning((int)locateInCircuits.size(), preflow, comb, remain[i][j]);
             for (vector<vector<int> >::iterator cvvit = comb.begin(); cvvit != comb.end(); ++cvvit) {
