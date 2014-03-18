@@ -22,7 +22,7 @@ do
         mkdir -p "$dir"
     fi
     
-    if [ ! -a "$resultFile" ]
+    if [ ! -f "$resultFile" ]
     then
         touch "$resultFile"
     fi

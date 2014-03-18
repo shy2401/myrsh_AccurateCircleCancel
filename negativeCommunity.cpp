@@ -237,6 +237,51 @@ static void combination(vector<int> &indexArray, int ArrayLen, vector<vector<int
   }
 }
 
+void prunnning(int maxLenOfLIC, vector<int> &preflow, vector<vector<int> > &comb, int keyEdgePreflow)
+{
+  vector<int> result;
+  int index = 0;
+  int stop = maxLenOfLIC;
+
+  while (1) {
+    if (result.empty() && index == stop)
+      return ;
+    result.push_back(index);
+    if (judgePreflow(preflow, result, keyEdgePreflow)) {
+      comb.push_back(result);
+      index = result.back();
+      result.pop_back();
+      if (index == (maxLenOfLIC - 1)) {
+        if (result.empty()) {
+          return ;
+        } else {
+          index = result.back();
+          result.pop_back();
+          index++;
+        }
+      } else {
+        index++;
+      }
+    } else {
+      if (index == (maxLenOfLIC - 1)) {
+        if ((index - result.front() + 1) == (int)result.size()) {
+          stop = result.front() + 1;
+        }
+        result.pop_back();
+        if (result.empty()) {
+          return;
+        } else {
+          index = result.back();
+          result.pop_back();
+          index++;
+        }
+      } else {
+        index++;
+      }
+    }
+  }
+}
+
 
 bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
 {
@@ -255,14 +300,14 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
 
   findCircuits(remain, nNodes, circuits);
 
-  //---调试用
-  // printf("remain\n\n");
-  // printArray(remain, nNodes);
-  // printf("flow\n\n");
-  // printArray(F, nNodes);
-  //---
-
   for (i = 0; i < nNodes; ++i) {
+    //---调试用
+    // printf("remain\n\n");
+    // printArray(remain, nNodes);
+    // printf("flow\n\n");
+    // printArray(F, nNodes);
+    //---
+
     for (j = 0; j < nNodes; ++j) {
       locateInCircuits.clear();
       weight.clear();
@@ -334,7 +379,8 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
             for(k = 0; k < (int)locateInCircuits.size(); ++k) {
               indexArray.push_back(k);
             }
-            combination(indexArray, locateInCircuits.size(), comb, preflow, remain[i][j]);
+            // combination(indexArray, locateInCircuits.size(), comb, preflow, remain[i][j]);
+            prunnning((int)locateInCircuits.size(), preflow, comb, remain[i][j]);
             for (vector<vector<int> >::iterator cvvit = comb.begin(); cvvit != comb.end(); ++cvvit) {
               for (k = 0; k < (int)(*cvvit).size(); ++k) {
                 setPreflowArrayZero(preflowArray, nNodes);
@@ -361,7 +407,7 @@ bool negativeCommunityCancel(Edge **C, int **F, int **remain, int nNodes)
 void NCC(Edge **C, int **F, int **remain, int nNodes, int sink)
 {
   do {
-    solveFAC(C, F, remain, nNodes, sink);
+    // solveFAC(C, F, remain, nNodes, sink);
   }while (negativeCommunityCancel(C, F, remain, nNodes));
 
 }
